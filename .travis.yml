@@ -1,0 +1,25 @@
+sudo: required
+language: generic
+services:
+  - docker
+
+before_install:
+  - docker build -t jauthik23/creact -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true jauthik23/creact npm test
+
+after_succes:
+  - docker build -t jauthik23/multi-client ./clent
+  - docker build -t jauthik23/multi-nginx ./nginx
+  - docker build -t jauthik23/multi-server ./server
+  - docker build -t jauthik23/multi-worker ./worker
+
+  #log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  
+  # take those images and push them to docker hub
+  - docker push jauthik23/multi-client
+  - docker push jauthik23/multi-nginx
+  - docker push jauthik23/multi-server
+  - docker push jauthik23/multi-worker
